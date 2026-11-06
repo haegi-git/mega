@@ -99,7 +99,11 @@ export default function Partner() {
                     <span>{a.type} · {a.formats.join(', ')}</span>
                     <span>{new Date(a.submittedAt).toLocaleString('ko-KR')}</span>
                   </div>
-                  <em className="status">{a.status}</em>
+                  <div className="apps__right">
+                    <em className={`status status--${a.status === '승인' ? 'ok' : a.status === '반려' ? 'bad' : 'wait'}`}>{a.status}</em>
+                    {a.status === '승인' && <Link to="/studio" className="btn btn--xs btn--grad">스튜디오 열기</Link>}
+                    {a.note && <span>{a.note}</span>}
+                  </div>
                 </li>
               ))}
             </ul>

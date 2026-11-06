@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Logo } from '../components/Header';
 import { useApp } from '../context/AppContext';
+import { DEMO_ACCOUNTS } from '../data/demoAccounts';
 
 export function AuthShell({ children }) {
   return (
@@ -57,6 +58,27 @@ export default function Login() {
         <a href="#" onClick={(e) => e.preventDefault()}>아이디 찾기</a>
         <span>|</span>
         <a href="#" onClick={(e) => e.preventDefault()}>비밀번호 찾기</a>
+      </div>
+      <div className="demo-login">
+        <p>🧪 데모 계정으로 바로 둘러보기</p>
+        {DEMO_ACCOUNTS.map((d) => (
+          <button
+            key={d.email}
+            type="button"
+            className="demo-login__btn"
+            onClick={() => {
+              try {
+                login({ email: d.email, password: d.password });
+                navigate(d.email.startsWith('admin') && from === '/' ? '/studio' : from, { replace: true });
+              } catch (err) {
+                setError(err.message);
+              }
+            }}
+          >
+            <strong>{d.name}</strong>
+            <span>{d.role}</span>
+          </button>
+        ))}
       </div>
       <div className="auth__divider"><span>또는</span></div>
       <div className="social">

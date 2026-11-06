@@ -18,6 +18,24 @@ import MyList from './pages/MyList';
 import MyPage from './pages/MyPage';
 import Subscribe from './pages/Subscribe';
 import NotFound from './pages/NotFound';
+import StudioLayout from './studio/StudioLayout';
+import StudioDashboard from './studio/StudioDashboard';
+import Broadcast from './studio/Broadcast';
+import StudioSchedule from './studio/StudioSchedule';
+import Contents from './studio/Contents';
+import Upload from './studio/Upload';
+import ChatSettings from './studio/ChatSettings';
+import Analytics from './studio/Analytics';
+import Revenue from './studio/Revenue';
+import ChannelSettings from './studio/ChannelSettings';
+import AdminLayout from './admin/AdminLayout';
+import AdminDashboard from './admin/AdminDashboard';
+import LiveMonitor from './admin/LiveMonitor';
+import System from './admin/System';
+import Applications from './admin/Applications';
+import ContentReview from './admin/ContentReview';
+import Reports from './admin/Reports';
+import Users from './admin/Users';
 
 export default function App() {
   return (
@@ -44,6 +62,30 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/watch/:id" element={<RequireAuth><Watch /></RequireAuth>} />
+
+        {/* 크리에이터 스튜디오 (방송사 · 채널 관리자) */}
+        <Route path="/studio" element={<RequireAuth><StudioLayout /></RequireAuth>}>
+          <Route index element={<StudioDashboard />} />
+          <Route path="broadcast" element={<Broadcast />} />
+          <Route path="schedule" element={<StudioSchedule />} />
+          <Route path="contents" element={<Contents />} />
+          <Route path="upload" element={<Upload />} />
+          <Route path="chat" element={<ChatSettings />} />
+          <Route path="analytics" element={<Analytics />} />
+          <Route path="revenue" element={<Revenue />} />
+          <Route path="settings" element={<ChannelSettings />} />
+        </Route>
+
+        {/* 플랫폼 운영자 콘솔 */}
+        <Route path="/admin" element={<RequireAuth><AdminLayout /></RequireAuth>}>
+          <Route index element={<AdminDashboard />} />
+          <Route path="lives" element={<LiveMonitor />} />
+          <Route path="system" element={<System />} />
+          <Route path="applications" element={<Applications />} />
+          <Route path="contents" element={<ContentReview />} />
+          <Route path="reports" element={<Reports />} />
+          <Route path="users" element={<Users />} />
+        </Route>
       </Routes>
     </>
   );

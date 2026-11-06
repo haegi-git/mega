@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { DEMO_ACCOUNTS } from '../data/demoAccounts';
 
 // ⚠️ 데모용: 회원 정보를 브라우저 localStorage에 저장합니다.
 // 실제 서비스에서는 반드시 서버 인증(API + 해시된 비밀번호 + 토큰)으로 교체하세요.
@@ -56,7 +57,9 @@ export function AppProvider({ children }) {
   // ---------- 회원 ----------
   const signup = ({ name, email, password }) => {
     const users = load('megaview:users', []);
-    if (users.some((u) => u.email === email)) throw new Error('이미 가입된 이메일입니다.');
+    if (users.some((u) => u.email === email) || DEMO_ACCOUNTS.some((d) => d.email === email)) {
+      throw new Error('이미 가입된 이메일입니다.');
+    }
     const newUser = { name, email, password, plan: null, joinedAt: Date.now() };
     save('megaview:users', [...users, newUser]);
     const { password: _pw, ...publicUser } = newUser;
@@ -64,9 +67,20 @@ export function AppProvider({ children }) {
   };
 
   const login = ({ email, password }) => {
-    const users = load('megaview:users', []);
+    let users = load('megaview:users', []);
+    // 데모 계정은 처음 로그인할 때 이 브라우저의 회원 목록에 추가 (멤버십 변경 등이 유지되도록)
+    const demo = DEMO_ACCOUNTS.find((d) => d.email === email);
+    if (demo && !users.some((u) => u.email === email)) {
+      const { role: _r, ...demoUser } = demo;
+      users = [...users, demoUser];
+      save('megaview:users', users);
+    }
     const found = users.find((u) => u.email === email && u.password === password);
     if (!found) throw new Error('이메일 또는 비밀번호가 올바르지 않습니다.');
+    // 관리자 콘솔에서 정지한 계정은 로그인 차단
+    if (load('megaview:studio', {}).userStatus?.[email] === '정지') {
+      throw new Error('운영 정책 위반으로 이용이 정지된 계정입니다. 고객센터에 문의해주세요.');
+    }
     const { password: _pw, ...publicUser } = found;
     setUser(publicUser);
   };
@@ -117,7 +131,29 @@ export function AppProvider({ children }) {
       ],
     }));
 
+  // ---------- 관리자: 모든 회원의 입점 신청 ----------
+  const allApplications = useMemo(
+    () =>
+      Object.entries(library).flatMap(([email, lib]) =>
+        (lib.applications || []).map((a) => ({ ...a, owner: email }))
+      ),
+    [library]
+  );
+  const setApplicationStatus = (email, id, status, note) =>
+    setLibrary((prev) => {
+      const lib = { ...EMPTY, ...(prev[email] || {}) };
+      return {
+        ...prev,
+        [email]: {
+          ...lib,
+          applications: lib.applications.map((a) => (a.id === id ? { ...a, status, note, reviewedAt: Date.now() } : a)),
+        },
+      };
+    });
+
   const value = {
+    allApplications,
+    setApplicationStatus,
     user,
     signup,
     login,

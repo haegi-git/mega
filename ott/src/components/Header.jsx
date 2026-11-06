@@ -67,7 +67,7 @@ export default function Header() {
         </nav>
       </div>
       <div className="header__right">
-        <Link to="/partner" className="header__partner">파트너센터</Link>
+        <Link to="/studio" className="header__partner">스튜디오</Link>
         <button className="icon-btn" onClick={() => navigate('/search')} aria-label="검색">
           <SearchIcon />
         </button>
@@ -86,6 +86,8 @@ export default function Header() {
                 <Link to="/mylist">팔로우 · 찜 · 시청기록</Link>
                 <Link to="/subscribe">멤버십</Link>
                 <Link to="/partner">채널 입점 신청</Link>
+                <Link to="/studio" className="menu-strong">크리에이터 스튜디오</Link>
+                <Link to="/admin" className="menu-strong">관리자 콘솔</Link>
                 <button
                   onClick={() => {
                     logout();

@@ -13,6 +13,19 @@ npm install      # PowerShell에서 막히면 npm.cmd install
 npm run dev      # http://localhost:5173
 ```
 
+## 데모 계정
+
+로그인 화면의 **“데모 계정으로 바로 둘러보기”** 버튼을 누르면 비밀번호 입력 없이 로그인돼요.
+직접 입력하려면 아래 계정을 쓰세요. (값은 `src/data/demoAccounts.js`에 있어요)
+
+| 계정 | 이메일 | 비밀번호 | 용도 |
+|---|---|---|---|
+| 데모팬 | fan@megaview.demo | demo1234 | 일반 팬 (팬 패스 이용 중 → 멤버십 전용 라이브 시청 가능) |
+| 데모운영자 | admin@megaview.demo | admin1234 | 스튜디오 · 관리자 콘솔 시연 |
+
+로그인 없이 볼 수 있는 곳: 홈, 숏드라마 목록 · 상세, 릴스, 라이브 시청, 아티스트, 편성표, 검색, 멤버십, 파트너센터
+로그인이 필요한 곳: 영상 재생(`/watch`), MY, 마이페이지, 크리에이터 스튜디오, 관리자 콘솔 (+ 팔로우 · 좋아요 · 채팅 · 찜 등의 동작)
+
 ## 페이지
 
 | 경로 | 설명 |
@@ -31,6 +44,37 @@ npm run dev      # http://localhost:5173
 | `/mylist`, `/mypage` | 팔로우 · 찜 · 시청기록 · 좋아요한 릴스 / 마이페이지 |
 | `/login`, `/signup` | 로그인 / 회원가입 |
 
+### 크리에이터 스튜디오 `/studio` (아티스트 · 기획사 · 제작사용)
+
+로그인 후 상단 프로필 메뉴 → **크리에이터 스튜디오**. 데모에서는 사이드바에서 관리할 채널을 자유롭게 바꿀 수 있어요.
+
+| 경로 | 설명 |
+|---|---|
+| `/studio` | 채널 대시보드: 팔로워 · 시청자 · 멤버십 · 수익, 다가오는 라이브, 최근 방송 기록 |
+| `/studio/broadcast` | **방송하기**: OBS용 서버 URL · 스트림 키(보기/복사/재발급), 브라우저 송출(웹캠 · 화면 공유), 방송 정보, 실시간 지표(시청자 · 비트레이트 · 드롭 프레임), 채팅 공지 · 삭제 · 차단 |
+| `/studio/schedule` | 라이브 예약 (편성표 노출, 팔로워 알림) |
+| `/studio/contents` | VOD · 숏드라마 · 릴스 관리, 업로드 처리 상태 |
+| `/studio/upload` | 영상 업로드 → 트랜스코딩 → 운영자 검수 → 게시 단계 표시 |
+| `/studio/chat` | 금칙어, 슬로우 모드, 팔로워 전용 채팅, 매니저, 차단 사용자 |
+| `/studio/analytics` | 시청자 추이, **채널 유입 경로(숏드라마 → 아티스트)**, 시청 품질(QoE), 기기 · 지역, 인기 콘텐츠 |
+| `/studio/revenue` | 정산 내역, 멤버십 혜택 설정 |
+| `/studio/settings` | 채널 소개 · 대표 색상 · 공지 · 알림 설정 + 미리보기 |
+
+### 관리자 콘솔 `/admin` (플랫폼 운영자용)
+
+| 경로 | 설명 |
+|---|---|
+| `/admin` | 운영 대시보드: 동시 접속자, CDN 송출량, 오토스케일링 이벤트, **평시 × 50 트래픽 급증 시뮬레이션** |
+| `/admin/lives` | 라이브 모니터링: 비트레이트 · 버퍼링 · 상태, 경고 · 강제 종료 |
+| `/admin/system` | 서비스별 상태(EKS · IVS · MediaConvert · CloudFront · Aurora), CI/CD 배포 이력(Trivy · Argo CD) |
+| `/admin/applications` | 채널 입점 심사: 자동 검토(중복 · 필수 정보) 후 승인 / 반려 → 신청자의 파트너센터에 결과 반영 |
+| `/admin/contents` | 스튜디오 업로드 영상 검수: 승인 시 게시, 반려 시 사유 전달 |
+| `/admin/reports` | 신고 처리: 경고 · 숨김 · 정지 · 기각 |
+| `/admin/users` | 회원 검색 · 멤버십 확인 · 이용 정지 (정지된 계정은 로그인 차단) |
+
+> 스튜디오와 관리자 콘솔은 서로 연결되어 있어요. 예) 파트너센터 신청 → 관리자 승인 → 신청자 화면에 "스튜디오 열기", 스튜디오 업로드 → 관리자 검수 → 게시됨.
+> 데모에서는 로그인한 누구나 두 콘솔에 들어갈 수 있어요. 실제로는 역할 기반 권한(채널 관리자 / 운영자)이 필요합니다.
+
 ## 구조
 
 ```
@@ -41,9 +85,13 @@ src/
     shorts.js     릴스
     lives.js      라이브 (시작 시각은 "지금" 기준으로 자동 계산)
     media.js      샘플 영상 · 이미지 URL
-  context/AppContext.jsx   로그인 · 팔로우 · 찜 · 좋아요 · 알림 · 시청기록 · 입점신청 (localStorage)
-  components/              Header, Layout, HeroBanner, ContentRow, ContentCard, ArtistAvatar, Icons
-  pages/                   각 페이지
+  context/AppContext.jsx     로그인 · 팔로우 · 찜 · 좋아요 · 알림 · 시청기록 · 입점신청 (localStorage)
+  context/StudioContext.jsx  스튜디오 · 관리자 데이터 (방송 · 업로드 · 검수 · 신고 등, localStorage)
+  components/                Header, Layout, HeroBanner, ContentRow, ContentCard, ArtistAvatar, Icons
+  pages/                     서비스 페이지
+  console/                   스튜디오 · 관리자 공용 레이아웃, 차트 · 카드 등 UI, console.css
+  studio/                    크리에이터 스튜디오 페이지
+  admin/                     관리자 콘솔 페이지 (+ adminData.js 샘플 데이터)
   index.css                전체 스타일
 ```
 
